@@ -27,8 +27,6 @@ mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
-import shutup; shutup.please()
-
 # for web cam input
 cap = cv2.VideoCapture(0)
 
