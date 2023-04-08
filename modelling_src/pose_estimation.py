@@ -18,8 +18,10 @@ def calculate_angle(a,b,c):
     return angle
 
 # function to calculate distance
-def calcualte_distance():
-    pass
+def calcualte_distance(a,b):
+    # euclidean distance between two points
+    dist = np.linalg.norm(a-b)
+    return dist
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
