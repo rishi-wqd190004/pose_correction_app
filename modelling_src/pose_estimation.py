@@ -2,6 +2,7 @@ import cv2
 import mediapipe as mp
 import time
 import numpy as np
+import math
 
 # function to calculate angle
 def calculate_angle(a,b,c):
@@ -20,7 +21,7 @@ def calculate_angle(a,b,c):
 # function to calculate distance
 def calcualte_distance(a,b):
     # euclidean distance between two points
-    dist = np.linalg.norm(a-b)
+    dist = math.dist(a,b)
     return dist
 
 mp_drawing = mp.solutions.drawing_utils
@@ -60,17 +61,31 @@ with mp_pose.Pose(
             # calculate angle
             angle_right = calculate_angle(RS,RE,LE)
             angle_left = calculate_angle(LS,LE,RE)
+            # calculate distance
+            dist_right = calcualte_distance(RS,RE)
+            dist_left = calcualte_distance(LS,LE)
             
-            # visualize
-            cv2.putText(image, str(angle_right.astype(int)), tuple(np.multiply(RE, [640,480]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2, cv2.LINE_AA) # change camera feed from phone web-cam for future use: change this --> {[640,480]}
-            cv2.putText(image, str(angle_left.astype(int)), tuple(np.multiply(LE, [640,480]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2, cv2.LINE_AA)
+            # visualize for angle
+            #cv2.putText(image, str(angle_right.astype(int)), tuple(np.multiply(RE, [640,480]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2, cv2.LINE_AA) # change camera feed from phone web-cam for future use: change this --> {[640,480]}
+            #cv2.putText(image, str(angle_left.astype(int)), tuple(np.multiply(LE, [640,480]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2, cv2.LINE_AA)
+            # visualize for distance
+            #cv2.putText(image, str(round(dist_right,2)), tuple(np.multiply(RE, [640,480]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2, cv2.LINE_AA)
 
             # adding different checks
             # Case1: checking if left and right angle is almost similar
-            tolerance = 4.0 
-            if abs(int(angle_right) - int(angle_left)) <= tolerance:
-                cv2.putText(image, str('Posture is correct'),(200,200), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
-            
+            tolerance_angle = 4.0 
+            if abs(int(angle_right) - int(angle_left)) <= tolerance_angle:
+                cv2.putText(image, str('Posture is correct by angle'),(200,200), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
+            else:
+                cv2.putText(image, str('Please correct your posture by angle'),(200,200), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
+
+            # Case2: checking if distance between RS,RE is equal to LS,LE
+            tolerance_dist = 0.01
+            print(abs(dist_right - dist_left))
+            if abs(dist_right - dist_left) <= tolerance_dist:
+                cv2.putText(image, str('Posture is correct by distance'),(400,400), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
+            else:
+                cv2.putText(image, str('Please correct your posture by distance'),(400,400), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
         except:
             pass
 
