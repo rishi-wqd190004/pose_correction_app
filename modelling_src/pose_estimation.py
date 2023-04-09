@@ -60,11 +60,17 @@ with mp_pose.Pose(
             # calculate angle
             angle_right = calculate_angle(RS,RE,LE)
             angle_left = calculate_angle(LS,LE,RE)
-            print(angle_right, angle_left)
-
+            
             # visualize
             cv2.putText(image, str(angle_right.astype(int)), tuple(np.multiply(RE, [640,480]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2, cv2.LINE_AA) # change camera feed from phone web-cam for future use: change this --> {[640,480]}
-            print(angle_right, angle_left)
+            cv2.putText(image, str(angle_left.astype(int)), tuple(np.multiply(LE, [640,480]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2, cv2.LINE_AA)
+
+            # adding different checks
+            # Case1: checking if left and right angle is almost similar
+            tolerance = 4.0 
+            if abs(int(angle_right) - int(angle_left)) <= tolerance:
+                cv2.putText(image, str('Posture is correct'),(200,200), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
+            
         except:
             pass
 
