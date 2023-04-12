@@ -24,6 +24,20 @@ def calcualte_distance(a,b):
     dist = math.dist(a,b)
     return dist
 
+# function to calculate mid point
+def calculate_mid_point(a,b):
+    x = (a[0] + b[0])/2.0
+    y = (a[1] + b[1])/2.0
+    c = [x,y]
+    return c
+
+# function to calculate quadilateral area
+def calculate_quad_area(a,b,c,d):
+    first = a[0]*b[1] + b[0]*c[1] + c[0]*d[1] + d[0]*a[1]
+    second = a[1]*b[0] + b[1]*c[0] + c[1]*d[0] + d[1]*a[0]
+    area = 0.5 * abs(first - second)
+    return abs(area)
+
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
@@ -57,6 +71,7 @@ with mp_pose.Pose(
             LE = [landmarks[mp_pose.PoseLandmark.LEFT_EAR.value].x,landmarks[mp_pose.PoseLandmark.LEFT_EAR.value].y] # left ear cordinates
             RS = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y] # right shoulder cordinates
             RE = [landmarks[mp_pose.PoseLandmark.RIGHT_EAR.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_EAR.value].y] # right ear cordinates
+            nose = [landmarks[mp_pose.PoseLandmark.NOSE.value].x,landmarks[mp_pose.PoseLandmark.NOSE.value].y] # nose cordinates
 
             # calculate angle
             angle_right = calculate_angle(RS,RE,LE)
@@ -64,7 +79,14 @@ with mp_pose.Pose(
             # calculate distance
             dist_right = calcualte_distance(RS,RE)
             dist_left = calcualte_distance(LS,LE)
-            
+            # mid distance of RS and LS
+            mid_RS_LS = calculate_mid_point(RS,LS)
+            dist_nose_mid_pt = calcualte_distance(nose,mid_RS_LS)
+            # area on left and right
+            area_right= calculate_quad_area(RE,RS,nose,mid_RS_LS)
+            alrea_left = calculate_quad_area(LE,LS,nose,mid_RS_LS)
+            print(area_right, alrea_left)
+
             # visualize for angle
             #cv2.putText(image, str(angle_right.astype(int)), tuple(np.multiply(RE, [640,480]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2, cv2.LINE_AA) # change camera feed from phone web-cam for future use: change this --> {[640,480]}
             #cv2.putText(image, str(angle_left.astype(int)), tuple(np.multiply(LE, [640,480]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2, cv2.LINE_AA)
@@ -81,11 +103,23 @@ with mp_pose.Pose(
 
             # Case2: checking if distance between RS,RE is equal to LS,LE
             tolerance_dist = 0.01
-            print(abs(dist_right - dist_left))
             if abs(dist_right - dist_left) <= tolerance_dist:
                 cv2.putText(image, str('Posture is correct by distance'),(400,400), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
             else:
                 cv2.putText(image, str('Please correct your posture by distance'),(400,400), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
+
+            # Case3: Nose to center of RS,LS
+            if mid_RS_LS == 0: # check the way this works don't hardcode the tolerance
+                tolerance_nose_mid = 0.25
+                if abs(dist_nose_mid_pt) >= tolerance_nose_mid:
+                    print(dist_nose_mid_pt)
+                    cv2.putText(image, str('Please correct your posture by nose distance'),(600,600), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
+                    cv2.line(image, tuple(nose), tuple(mid_RS_LS), (0,255,0), thickness=2)
+            # Case4: Area under Nose, RE,RS and center of RS,LS and other side
+            if area_right == alrea_left:
+                cv2.putText(image, str('Posture is correct by quad angle'),(100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
+            else:
+                cv2.putText(image, str('Please correct your posture by quad angle'),(100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
         except:
             pass
 
