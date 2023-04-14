@@ -38,6 +38,39 @@ def calculate_quad_area(a,b,c,d):
     area = 0.5 * abs(first - second)
     return abs(area)
 
+# functions for cases of pose detection
+def case1(angle_right,angle_left,tol_angle):
+    # Case1: checking if left and right angle is almost similar
+    tolerance_angle = tol_angle
+    if abs(int(angle_right) - int(angle_left)) <= tolerance_angle:
+        cv2.putText(image, str('Posture is correct by angle'),(200,200), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
+    else:
+        cv2.putText(image, str('Please correct your posture by angle'),(200,200), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
+
+def case2(dist_right,dist_left, tol_dist):
+    # Case2: checking if distance between RS,RE is equal to LS,LE
+    tolerance_dist = tol_dist
+    if abs(dist_right - dist_left) <= tolerance_dist:
+        cv2.putText(image, str('Posture is correct by distance'),(400,400), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
+    else:
+        cv2.putText(image, str('Please correct your posture by distance'),(400,400), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
+
+def case3(mid_RS_LS,dist_nose_mid_pt, tol_nose_mid):
+    # check this functions testing
+    # Case3: Nose to center of RS,LS
+    if mid_RS_LS == 0: # check the way this works don't hardcode the tolerance
+        tolerance_nose_mid = tol_nose_mid
+        if abs(dist_nose_mid_pt) >= tolerance_nose_mid:
+            cv2.putText(image, str('Please correct your posture by nose distance'),(600,600), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
+            cv2.line(image, tuple(nose), tuple(mid_RS_LS), (0,255,0), thickness=2)
+
+def case4(area_right, alrea_left,tol_diff_area):
+    # Case4: Area under Nose, RE,RS and center of RS,LS and other side
+    if math.isclose(area_right, alrea_left, rel_tol=tol_diff_area):
+        cv2.putText(image, str('Posture is correct by quad angle'),(100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
+    else:
+        cv2.putText(image, str('Please correct your posture by quad angle'),(100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
+
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
@@ -85,7 +118,6 @@ with mp_pose.Pose(
             # area on left and right
             area_right= calculate_quad_area(RE,RS,nose,mid_RS_LS)
             alrea_left = calculate_quad_area(LE,LS,nose,mid_RS_LS)
-            print(area_right, alrea_left)
 
             # visualize for angle
             #cv2.putText(image, str(angle_right.astype(int)), tuple(np.multiply(RE, [640,480]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2, cv2.LINE_AA) # change camera feed from phone web-cam for future use: change this --> {[640,480]}
@@ -94,32 +126,10 @@ with mp_pose.Pose(
             #cv2.putText(image, str(round(dist_right,2)), tuple(np.multiply(RE, [640,480]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2, cv2.LINE_AA)
 
             # adding different checks
-            # Case1: checking if left and right angle is almost similar
-            tolerance_angle = 4.0 
-            if abs(int(angle_right) - int(angle_left)) <= tolerance_angle:
-                cv2.putText(image, str('Posture is correct by angle'),(200,200), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
-            else:
-                cv2.putText(image, str('Please correct your posture by angle'),(200,200), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
-
-            # Case2: checking if distance between RS,RE is equal to LS,LE
-            tolerance_dist = 0.01
-            if abs(dist_right - dist_left) <= tolerance_dist:
-                cv2.putText(image, str('Posture is correct by distance'),(400,400), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
-            else:
-                cv2.putText(image, str('Please correct your posture by distance'),(400,400), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
-
-            # Case3: Nose to center of RS,LS
-            if mid_RS_LS == 0: # check the way this works don't hardcode the tolerance
-                tolerance_nose_mid = 0.25
-                if abs(dist_nose_mid_pt) >= tolerance_nose_mid:
-                    print(dist_nose_mid_pt)
-                    cv2.putText(image, str('Please correct your posture by nose distance'),(600,600), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
-                    cv2.line(image, tuple(nose), tuple(mid_RS_LS), (0,255,0), thickness=2)
-            # Case4: Area under Nose, RE,RS and center of RS,LS and other side
-            if area_right == alrea_left:
-                cv2.putText(image, str('Posture is correct by quad angle'),(100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
-            else:
-                cv2.putText(image, str('Please correct your posture by quad angle'),(100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
+            case1(angle_right,angle_left,tol_angle=4.0)
+            #case2(dist_right,dist_left,tol_dist=0.01)
+            #case3(mid_RS_LS,dist_nose_mid_pt,tol_nose_mid=0.25)
+            #case4(area_right, alrea_left,tol_diff_area=0.2)
         except:
             pass
 
