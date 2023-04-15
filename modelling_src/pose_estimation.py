@@ -43,17 +43,27 @@ def case1(angle_right,angle_left,tol_angle):
     # Case1: checking if left and right angle is almost similar
     tolerance_angle = tol_angle
     if abs(int(angle_right) - int(angle_left)) <= tolerance_angle:
-        cv2.putText(image, str('Posture is correct by angle'),(200,200), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
+        cv2.putText(image, str('Case1: Posture is correct by angle'),(20,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
     else:
-        cv2.putText(image, str('Please correct your posture by angle'),(200,200), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
+        # check how much left or right side angle differs
+        diff = angle_left - angle_right
+        if diff > tol_angle:
+            cv2.putText(image, ("Tilt your head: " + str(diff.astype(int)) + " degrees to right"), (20,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (230, 216, 173), 2, cv2.LINE_AA) # change camera feed from phone web-cam for future use: change this --> {[640,480]}
+        else:
+            cv2.putText(image, ("Tilt your head: " + str(abs(diff.astype(int))) + " degrees to left"), (20,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (230, 216, 173), 2, cv2.LINE_AA) # change camera feed from phone web-cam for future use: change this --> {[640,480]}
+        cv2.putText(image, str('Case1: Please correct your posture by angle'),(20,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
 
 def case2(dist_right,dist_left, tol_dist):
     # Case2: checking if distance between RS,RE is equal to LS,LE
-    tolerance_dist = tol_dist
-    if abs(dist_right - dist_left) <= tolerance_dist:
-        cv2.putText(image, str('Posture is correct by distance'),(400,400), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
+    if abs(dist_right - dist_left) <= tol_dist:
+        cv2.putText(image, str('Case2: Posture is correct by distance'),(400,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
     else:
-        cv2.putText(image, str('Please correct your posture by distance'),(400,400), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
+        diff_dist = dist_right - dist_left
+        if dist_right > dist_left:
+            cv2.putText(image, ("Turn your head: " + str(round(abs(diff_dist),2)) + " mm to right"), (20,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (230, 216, 173), 2, cv2.LINE_AA)
+        else:
+            cv2.putText(image, ("Turn your head: " + str(round(abs(diff_dist),2)) + " mm to left"), (20,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (230, 216, 173), 2, cv2.LINE_AA)
+        cv2.putText(image, str('Case2: Please correct your posture by distance'),(400,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
 
 def case3(mid_RS_LS,dist_nose_mid_pt, tol_nose_mid):
     # check this functions testing
@@ -119,15 +129,9 @@ with mp_pose.Pose(
             area_right= calculate_quad_area(RE,RS,nose,mid_RS_LS)
             alrea_left = calculate_quad_area(LE,LS,nose,mid_RS_LS)
 
-            # visualize for angle
-            #cv2.putText(image, str(angle_right.astype(int)), tuple(np.multiply(RE, [640,480]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2, cv2.LINE_AA) # change camera feed from phone web-cam for future use: change this --> {[640,480]}
-            #cv2.putText(image, str(angle_left.astype(int)), tuple(np.multiply(LE, [640,480]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2, cv2.LINE_AA)
-            # visualize for distance
-            #cv2.putText(image, str(round(dist_right,2)), tuple(np.multiply(RE, [640,480]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2, cv2.LINE_AA)
-
             # adding different checks
             case1(angle_right,angle_left,tol_angle=4.0)
-            #case2(dist_right,dist_left,tol_dist=0.01)
+            case2(dist_right,dist_left,tol_dist=0.03)
             #case3(mid_RS_LS,dist_nose_mid_pt,tol_nose_mid=0.25)
             #case4(area_right, alrea_left,tol_diff_area=0.2)
         except:
