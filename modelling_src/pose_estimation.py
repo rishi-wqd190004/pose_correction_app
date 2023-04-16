@@ -65,21 +65,29 @@ def case2(dist_right,dist_left, tol_dist):
             cv2.putText(image, ("Turn your head: " + str(round(abs(diff_dist),2)) + " mm to left"), (20,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (230, 216, 173), 2, cv2.LINE_AA)
         cv2.putText(image, str('Case2: Please correct your posture by distance'),(400,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
 
-def case3(mid_RS_LS,dist_nose_mid_pt, tol_nose_mid):
-    # check this functions testing
-    # Case3: Nose to center of RS,LS
-    if mid_RS_LS == 0: # check the way this works don't hardcode the tolerance
-        tolerance_nose_mid = tol_nose_mid
-        if abs(dist_nose_mid_pt) >= tolerance_nose_mid:
-            cv2.putText(image, str('Please correct your posture by nose distance'),(600,600), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
-            cv2.line(image, tuple(nose), tuple(mid_RS_LS), (0,255,0), thickness=2)
-
-def case4(area_right, alrea_left,tol_diff_area):
-    # Case4: Area under Nose, RE,RS and center of RS,LS and other side
-    if math.isclose(area_right, alrea_left, rel_tol=tol_diff_area):
-        cv2.putText(image, str('Posture is correct by quad angle'),(100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
+def case3(dist_nose_RS,dist_nose_LS,tol_nose_dist):
+    # Case3: Distance between nose to RS,LS
+    if abs(dist_nose_RS - dist_nose_LS) <= tol_nose_dist:
+        cv2.putText(image, str('Case3: Posture correct by nose and shoulder distance'),(800,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
     else:
-        cv2.putText(image, str('Please correct your posture by quad angle'),(100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
+        diff_nose_dist = dist_nose_RS - dist_nose_LS
+        if dist_nose_RS > dist_nose_LS:
+            cv2.putText(image, ("Raise your head: " + str(round(abs(diff_nose_dist),2)) + " mm to right"), (20,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (230, 216, 173), 2, cv2.LINE_AA)
+        else:
+            cv2.putText(image, ("Move your head: " + str(round(abs(diff_nose_dist),2)) + " mm to left"), (20,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (230, 216, 173), 2, cv2.LINE_AA)
+        cv2.putText(image, str('Case3: Please correct your posture by nose and shoulder distance'),(800,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
+
+def case4(area_right, area_left,tol_diff_area):
+    # Case4: Area under Nose, RE,RS and center of RS,LS and other side
+    if math.isclose(area_right, area_left, rel_tol=tol_diff_area):
+        cv2.putText(image, str('Case4: Posture is correct by quad area'),(20,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
+    else:
+        diff_area = area_right - area_left
+        if area_right > area_left:
+            cv2.putText(image, ("Straighten your head: " + str(round(abs(diff_area),2)) + " mm to right"), (40,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (230, 216, 173), 2, cv2.LINE_AA)
+        else:
+            cv2.putText(image, ("Straighten your head: " + str(round(abs(diff_area),2)) + " mm to right"), (40,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (230, 216, 173), 2, cv2.LINE_AA)
+        cv2.putText(image, str('Case4: Please correct your posture by quad area'),(20,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
@@ -124,7 +132,8 @@ with mp_pose.Pose(
             dist_left = calcualte_distance(LS,LE)
             # mid distance of RS and LS
             mid_RS_LS = calculate_mid_point(RS,LS)
-            dist_nose_mid_pt = calcualte_distance(nose,mid_RS_LS)
+            dist_nose_RS = calcualte_distance(nose,RS)
+            dist_nose_LS = calcualte_distance(nose,LS)
             # area on left and right
             area_right= calculate_quad_area(RE,RS,nose,mid_RS_LS)
             alrea_left = calculate_quad_area(LE,LS,nose,mid_RS_LS)
@@ -132,8 +141,8 @@ with mp_pose.Pose(
             # adding different checks
             case1(angle_right,angle_left,tol_angle=4.0)
             case2(dist_right,dist_left,tol_dist=0.03)
-            #case3(mid_RS_LS,dist_nose_mid_pt,tol_nose_mid=0.25)
-            #case4(area_right, alrea_left,tol_diff_area=0.2)
+            case3(dist_nose_RS,dist_nose_LS,tol_nose_dist=0.05)
+            case4(area_right, alrea_left,tol_diff_area=0.2)
         except:
             pass
 
