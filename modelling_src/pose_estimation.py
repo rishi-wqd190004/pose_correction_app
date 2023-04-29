@@ -2,6 +2,7 @@ import cv2
 import mediapipe as mp
 import time
 import numpy as np
+import math
 
 # function to calculate angle
 def calculate_angle(a,b,c):
@@ -18,14 +19,79 @@ def calculate_angle(a,b,c):
     return angle
 
 # function to calculate distance
-def calcualte_distance():
-    pass
+def calcualte_distance(a,b):
+    # euclidean distance between two points
+    dist = math.dist(a,b)
+    return dist
+
+# function to calculate mid point
+def calculate_mid_point(a,b):
+    x = (a[0] + b[0])/2.0
+    y = (a[1] + b[1])/2.0
+    c = [x,y]
+    return c
+
+# function to calculate quadilateral area
+def calculate_quad_area(a,b,c,d):
+    first = a[0]*b[1] + b[0]*c[1] + c[0]*d[1] + d[0]*a[1]
+    second = a[1]*b[0] + b[1]*c[0] + c[1]*d[0] + d[1]*a[0]
+    area = 0.5 * abs(first - second)
+    return abs(area)
+
+# functions for cases of pose detection
+def case1(angle_right,angle_left,tol_angle):
+    # Case1: checking if left and right angle is almost similar
+    tolerance_angle = tol_angle
+    if abs(int(angle_right) - int(angle_left)) <= tolerance_angle:
+        cv2.putText(image, str('Case1: Posture is correct by angle'),(20,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
+    else:
+        # check how much left or right side angle differs
+        diff = angle_left - angle_right
+        if diff > tol_angle:
+            cv2.putText(image, ("Tilt your head: " + str(diff.astype(int)) + " degrees to right"), (20,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (230, 216, 173), 2, cv2.LINE_AA) # change camera feed from phone web-cam for future use: change this --> {[640,480]}
+        else:
+            cv2.putText(image, ("Tilt your head: " + str(abs(diff.astype(int))) + " degrees to left"), (20,450), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (230, 216, 173), 2, cv2.LINE_AA) # change camera feed from phone web-cam for future use: change this --> {[640,480]}
+        cv2.putText(image, str('Case1: Please correct your posture by angle'),(20,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
+
+def case2(dist_right,dist_left, tol_dist):
+    # Case2: checking if distance between RS,RE is equal to LS,LE
+    if abs(dist_right - dist_left) <= tol_dist:
+        cv2.putText(image, str('Case2: Posture is correct by distance'),(400,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
+    else:
+        diff_dist = dist_right - dist_left
+        if dist_right > dist_left:
+            cv2.putText(image, ("Turn your head: " + str(round(abs(diff_dist),2)) + " mm to right"), (20,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (230, 216, 173), 2, cv2.LINE_AA)
+        else:
+            cv2.putText(image, ("Turn your head: " + str(round(abs(diff_dist),2)) + " mm to left"), (20,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (230, 216, 173), 2, cv2.LINE_AA)
+        cv2.putText(image, str('Case2: Please correct your posture by distance'),(400,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
+
+def case3(dist_nose_RS,dist_nose_LS,tol_nose_dist):
+    # Case3: Distance between nose to RS,LS
+    if abs(dist_nose_RS - dist_nose_LS) <= tol_nose_dist:
+        cv2.putText(image, str('Case3: Posture correct by nose and shoulder distance'),(800,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
+    else:
+        diff_nose_dist = dist_nose_RS - dist_nose_LS
+        if dist_nose_RS > dist_nose_LS:
+            cv2.putText(image, ("Raise your head: " + str(round(abs(diff_nose_dist),2)) + " mm to right"), (20,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (230, 216, 173), 2, cv2.LINE_AA)
+        else:
+            cv2.putText(image, ("Move your head: " + str(round(abs(diff_nose_dist),2)) + " mm to left"), (20,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (230, 216, 173), 2, cv2.LINE_AA)
+        cv2.putText(image, str('Case3: Please correct your posture by nose and shoulder distance'),(800,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
+
+def case4(area_right, area_left,tol_diff_area):
+    # Case4: Area under Nose, RE,RS and center of RS,LS and other side
+    if math.isclose(area_right, area_left, rel_tol=tol_diff_area):
+        cv2.putText(image, str('Case4: Posture is correct by quad area'),(20,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2, cv2.LINE_AA)
+    else:
+        diff_area = area_right - area_left
+        if area_right > area_left:
+            cv2.putText(image, ("Straighten your head: " + str(round(abs(diff_area),2)) + " mm to right"), (40,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (230, 216, 173), 2, cv2.LINE_AA)
+        else:
+            cv2.putText(image, ("Straighten your head: " + str(round(abs(diff_area),2)) + " mm to right"), (40,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (230, 216, 173), 2, cv2.LINE_AA)
+        cv2.putText(image, str('Case4: Please correct your posture by quad area'),(20,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2, cv2.LINE_AA)
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
-
-import shutup; shutup.please()
 
 # for web cam input
 cap = cv2.VideoCapture(0)
@@ -56,15 +122,27 @@ with mp_pose.Pose(
             LE = [landmarks[mp_pose.PoseLandmark.LEFT_EAR.value].x,landmarks[mp_pose.PoseLandmark.LEFT_EAR.value].y] # left ear cordinates
             RS = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y] # right shoulder cordinates
             RE = [landmarks[mp_pose.PoseLandmark.RIGHT_EAR.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_EAR.value].y] # right ear cordinates
+            nose = [landmarks[mp_pose.PoseLandmark.NOSE.value].x,landmarks[mp_pose.PoseLandmark.NOSE.value].y] # nose cordinates
 
             # calculate angle
             angle_right = calculate_angle(RS,RE,LE)
             angle_left = calculate_angle(LS,LE,RE)
-            print(angle_right, angle_left)
+            # calculate distance
+            dist_right = calcualte_distance(RS,RE)
+            dist_left = calcualte_distance(LS,LE)
+            # mid distance of RS and LS
+            mid_RS_LS = calculate_mid_point(RS,LS)
+            dist_nose_RS = calcualte_distance(nose,RS)
+            dist_nose_LS = calcualte_distance(nose,LS)
+            # area on left and right
+            area_right= calculate_quad_area(RE,RS,nose,mid_RS_LS)
+            alrea_left = calculate_quad_area(LE,LS,nose,mid_RS_LS)
 
-            # visualize
-            cv2.putText(image, str(angle_right.astype(int)), tuple(np.multiply(RE, [640,480]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2, cv2.LINE_AA) # change camera feed from phone web-cam for future use: change this --> {[640,480]}
-            print(angle_right, angle_left)
+            # adding different checks
+            case1(angle_right,angle_left,tol_angle=4.0)
+            case2(dist_right,dist_left,tol_dist=0.03)
+            case3(dist_nose_RS,dist_nose_LS,tol_nose_dist=0.05)
+            case4(area_right, alrea_left,tol_diff_area=0.2)
         except:
             pass
 
