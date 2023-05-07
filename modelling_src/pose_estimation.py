@@ -119,9 +119,9 @@ def caseChecker():
     case3(dist_nose_RS,dist_nose_LS,tol_nose_dist=0.05)
     case4(area_right, alrea_left,tol_diff_area=0.2)
     if case1_res == case3_res and case4_res == case3_res and case1_res == case4_res:
-        print('Cases passed')
+        print('Cases 1,3,4 passed')
     else:
-        print('Case needs to be corrected')
+        print('Case 1,3,4 needs to be corrected')
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
