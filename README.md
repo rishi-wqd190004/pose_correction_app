@@ -10,3 +10,12 @@ Mainly in today's era of people using phone a lot, many are having neck or back 
 
 The next stage would be to measeure the distance of eyes from the screen of phone. --> Will surely have a look on that too.
 
+## Installation:
+### Option1:
+
+  1. Download the whole repo and install the *requirements.txt*
+  2. Run *pose_estimation.py*
+
+### Option2:
+  Using docker:
+  - Use command *docker pull rishi1304/pose_estimation:latest*
