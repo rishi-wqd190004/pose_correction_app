@@ -1,8 +1,11 @@
-opencv-python==4.7.0.72
-opencv-python-headless==4.7.0.72
 pillow
 cython
-numpy==1.23.5
 ffmpeg
-protobuf==3.20.1
-mediapipe
+absl-py
+attrs>=19.1.0
+flatbuffers>=2.0
+matplotlib
+numpy
+opencv-contrib-python
+protobuf>=3.11,<4
+sounddevice>=0.4.4
