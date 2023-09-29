@@ -2,6 +2,7 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import math
+from datetime import datetime
 
 # function to calculate angle
 def calculate_angle(a,b,c):
@@ -130,6 +131,12 @@ mp_pose = mp.solutions.pose
 # for web cam input
 cap = cv2.VideoCapture(0)
 
+# writing image to folder
+path = '/Users/rishinigam/pose_correction_app/modelling_src/output_pics/'
+now = datetime.now()
+file_name = str(now.strftime("%m:%d:%Y-%H:%M:%S"))
+capture_duration = 120000 # milliseconds ~ 2 minutes
+
 with mp_pose.Pose(
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5) as pose:
@@ -177,14 +184,13 @@ with mp_pose.Pose(
         except:
             pass
 
-        mp_drawing.draw_landmarks(
-            image,
-            results.pose_landmarks,
-            mp_pose.POSE_CONNECTIONS,
-            landmark_drawing_spec = mp_drawing_styles.get_default_pose_landmarks_style())
-        # glip the image horizontally for a selfie-view display.
-        #cv2.imshow('MediaPipe Pose', cv2.flip(image,1))
         cv2.imshow('MediaPipe Neck Pose',image)
+
+        # calculate elapsed time
+        elapsed_time = (datetime.now - now).total_seconds() * 1000
+        if elapsed_time >= capture_duration:
+            cv2.imwrite(path+file_name+'.jpg', image)
+            break
         if cv2.waitKey(5) & 0xFF == ord('q'):
             break
     cap.release()
