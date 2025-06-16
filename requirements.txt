@@ -4,5 +4,5 @@ pillow
 cython
 numpy==1.23.5
 ffmpeg
-protobuf==3.20.1
+protobuf==4.25.8
 mediapipe
